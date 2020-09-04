@@ -36,6 +36,8 @@ export default class BFS extends React.Component {
     this.canvasHex.height = canvasHeight;
     this.canvasInteraction.width = canvasWidth;
     this.canvasInteraction.height = canvasHeight;
+    this.canvasView.height = canvasHeight;
+    this.canvasView.width = canvasWidth;
     this.getCanvasPosition(this.canvasInteraction);
     this.drawHexes();
     this.drawObstacles();
@@ -354,9 +356,7 @@ export default class BFS extends React.Component {
     ctx.fill();
   }
 
-  handleClick() {
-    this.addObstacles();
-  }
+  handleClick() {}
 
   drawObstacles() {
     this.state.obstacles.map((1) => {
@@ -364,6 +364,34 @@ export default class BFS extends React.Component {
       const { x, y } = this.hexToPixel(this.Hex(q, r, s));
       this.drawHex(this.canvasHex, this.Point(x, y), 1, "black", "black");
     });
+  }
+
+  getNeighbors(h) {
+    var arr = [];
+    for (let i = 0; i <= 5; i++) {
+      const { q, r, s } = this.getCubeNeighbor(this.Hex(h.q, h.r, h.s), i);
+      arr.push(this.Hex(q, r, s));
+    }
+    return arr;
+  }
+
+  breadthFirstSearch(playerPosition) {
+    var frontier = [playerPosition];
+    var cameFrom = {};
+    cameFrom[JSON.stringify(playerPosition)] = JSON.stringify(playerPosition);
+    while (frontier.length != 0) {
+      var current = frontier.shift();
+      let arr = this.getNeighbors(current);
+      arr.map((1) => {
+        if (
+          !cameFrom.hasOwnProperty(JSON.stringify(1)) &&
+          this.state.hexPathMap.includes(JSON.stringify(1))
+        ) {
+          frontier.push(1);
+          cameFrom[JSON.stringify(1)] = JSON.stringify(this.current);
+        }
+      });
+    }
   }
 
   render() {
@@ -375,6 +403,7 @@ export default class BFS extends React.Component {
             (this.canvasCoordinates = canvasCoordinates)
           }
         ></canvas>
+        <canvas ref={(canvasView) => (this.canvasView = canvasView)}></canvas>
         <canvas
           ref={(canvasInteraction) =>
             (this.canvasInteraction = canvasInteraction)
