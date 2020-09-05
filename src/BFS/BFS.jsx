@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import "./BFS.css";
 
-const DUMMY_OBSTACLES = ['{"q":4, "r":-2,"s":-2}', '{"q":4, "r":-2,"s":-2}'];
+const DUMMY_OBSTACLES = ['{"q":4, "r":-2,"s":-2}', '{"q":3, "r":-2,"s":-3}'];
 
 export default class BFS extends React.Component {
   constructor(props) {
@@ -425,16 +425,16 @@ export default class BFS extends React.Component {
     var frontier = [playerPosition];
     var cameFrom = {};
     cameFrom[JSON.stringify(playerPosition)] = JSON.stringify(playerPosition);
-    while (frontier.length !== 0) {
+    while (frontier.length != 0) {
       var current = frontier.shift();
       let arr = this.getNeighbors(current);
-      arr.map((w) => {
+      arr.map((l) => {
         if (
-          !cameFrom.hasOwnProperty(JSON.stringify(w)) &&
-          this.state.hexPathMap.includes(JSON.stringify(w))
+          !cameFrom.hasOwnProperty(JSON.stringify(l)) &&
+          this.state.hexPathMap.includes(JSON.stringify(l))
         ) {
-          frontier.push(1);
-          cameFrom[JSON.stringify(w)] = JSON.stringify(this.current);
+          frontier.push(l);
+          cameFrom[JSON.stringify(l)] = JSON.stringify(this.current);
         }
       });
     }
@@ -448,7 +448,7 @@ export default class BFS extends React.Component {
     const { cameFrom } = this.state;
     start = JSON.stringify(start);
     current = JSON.stringify(current);
-    if (cameFrom[current] !== undefined) {
+    if (cameFrom[current] != undefined) {
       var path = [current];
       while (current !== start) {
         current = cameFrom[current];
