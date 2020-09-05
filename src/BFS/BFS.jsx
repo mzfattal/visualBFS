@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import "./BFS.css";
 
-const DUMMY_OBSTACLES = ['{"q":4, "r":-2,"s":-2}'];
+const DUMMY_OBSTACLES = ['{"q":4, "r":-2,"s":-2}', '{"q":4, "r":-2,"s":-2}'];
 
 export default class BFS extends React.Component {
   constructor(props) {
@@ -57,26 +57,7 @@ export default class BFS extends React.Component {
       const { canvasWidth, canvasHeight } = this.state.canvasSize;
       const ctx = this.canvasInteraction.getContext("2d");
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-      let currentDistanceLine = nextState.currentDistanceLine;
-      for (let i = 0; i <= currentDistanceLine.length - 2; i++) {
-        if (i == 0) {
-          this.drawHex(
-            this.canvasInteraction,
-            this.Point(currentDistanceLine[i].x, currentDistanceLine[i].y),
-            1,
-            "black",
-            "red"
-          );
-        } else {
-          this.drawHex(
-            this.canvasInteraction,
-            this.Point(currentDistanceLine[i].x, currentDistanceLine[i].y),
-            1,
-            "black",
-            "grey"
-          );
-        }
-      }
+      this.drawPath();
       nextState.obstacles.map((l) => {
         const { q, r, s, x, y } = JSON.parse(l);
         this.drawHex(
@@ -94,6 +75,27 @@ export default class BFS extends React.Component {
         "black",
         "grey"
       );
+      return true;
+    }
+    if (nextState.cameFrom !== this.state.cameFrom) {
+      const { canvasWidth, canvasHeight } = this.state.canvasSize;
+      const ctx = this.canvasView.getContext("2d");
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      for (let l in nextState.cameFrom) {
+        const { q, r, s } = JSON.parse(l);
+        const { x, y } = this.hexToPixel(this.Hex(q, r));
+        this.drawHex(
+          this.canvasView,
+          this.Point(x, y),
+          1,
+          "black",
+          "grey",
+          0.1
+        );
+        var from = JSON.parse(nextState.cameFrom[l]);
+        var fromCoord = this.hexToPixel(this.Hex(from.q, from.r));
+        this.drawArrow(fromCoord.x, fromCoord.y, x, y);
+      }
       return true;
     }
     return false;
@@ -150,7 +152,7 @@ export default class BFS extends React.Component {
 
     var p = 0;
     for (let r = 0; r <= rBottomSide; r++) {
-      if (r % 2 == 0 && r !== 0) {
+      if (r % 2 === 0 && r !== 0) {
         p++;
       }
       for (let q = -qLeftSide; q <= qRightSide; q++) {
@@ -243,6 +245,10 @@ export default class BFS extends React.Component {
     const { x, y } = this.hexToPixel(this.Hex(q, r, s));
     let playerPosition = this.state.playerPosition;
     this.getDistanceLine(this.Hex(0, 0, 0), this.Hex(q, r, s));
+    this.getPath(
+      this.Hex(playerPosition.q, playerPosition.r, playerPosition.s),
+      this.Hex(q, r, s)
+    );
     if (
       x > hexWidth / 2 &&
       x < canvasWidth - hexWidth / 2 &&
@@ -379,7 +385,17 @@ export default class BFS extends React.Component {
     ctx.fill();
   }
 
-  handleClick() {}
+  handleClick() {
+    const { currentHex, cameFrom } = this.state;
+    const { q, r, s } = currentHex;
+    if (cameFrom[JSON.stringify(this.Hex(q, r, s))]) {
+      this.setState(
+        { platerPosition: this.Hex(q, r, s) },
+        (this.breadthFirstSearchCallback = () =>
+          this.breadthFirstSearch(this.state.playerPosition))
+      );
+    }
+  }
 
   drawObstacles() {
     this.state.obstacles.map((w) => {
@@ -409,7 +425,7 @@ export default class BFS extends React.Component {
     var frontier = [playerPosition];
     var cameFrom = {};
     cameFrom[JSON.stringify(playerPosition)] = JSON.stringify(playerPosition);
-    while (frontier.length != 0) {
+    while (frontier.length !== 0) {
       var current = frontier.shift();
       let arr = this.getNeighbors(current);
       arr.map((w) => {
@@ -426,6 +442,71 @@ export default class BFS extends React.Component {
     this.setState({
       cameFrom: cameFrom,
     });
+  }
+
+  getPath(start, current) {
+    const { cameFrom } = this.state;
+    start = JSON.stringify(start);
+    current = JSON.stringify(current);
+    if (cameFrom[current] !== undefined) {
+      var path = [current];
+      while (current !== start) {
+        current = cameFrom[current];
+        path.push(current);
+      }
+    }
+    path = [].concat(path);
+    this.setState({
+      path: path,
+    });
+  }
+
+  drawPath() {
+    let path = this.state.path;
+    for (let i = 0; i <= path.length - 1; i++) {
+      const { q, r } = JSON.parse(path[i]);
+      const { x, y } = this.hexToPixel(this.Hex(q, r));
+      this.drawHex(
+        this.canvasInteraction,
+        this.Point(x, y),
+        1,
+        "black",
+        "#05b9f5"
+      );
+    }
+  }
+
+  drawArrow(fromx, fromy, tox, toy) {
+    var ctx = this.canvasView.getContext("2d");
+    var headlen = 5;
+    var angle = Math.atan2(toy - fromy, tox - fromx);
+    ctx.beginPath();
+    ctx.moveTo(fromx, fromy);
+    ctx.lineTo(tox, toy);
+    ctx.strokeStyle = "#05b9f5";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(tox, toy);
+    ctx.globalAlpha = 0.3;
+    ctx.lineTo(
+      tox - headlen * Math.cos(angle - Math.PI / 7),
+      toy - headlen * Math.sin(angle - Math.PI / 7)
+    );
+    ctx.lineTo(
+      tox - headlen * Math.cos(angle + Math.PI / 7),
+      toy - headlen * Math.sin(angle + Math.PI / 7)
+    );
+    ctx.lineTo(tox, toy);
+    ctx.lineTo(
+      tox - headlen * Math.cos(angle - Math.PI / 7),
+      toy - headlen * Math.sin(angle - Math.PI / 7)
+    );
+    ctx.strokeStyle = "#05b9f5";
+    ctx.lineWidth = 5;
+    ctx.stroke();
+    ctx.fillStyle = "#05b9f5";
+    ctx.fill();
   }
 
   render() {
