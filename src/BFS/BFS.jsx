@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import "./BFS.css";
 
-const DUMMY_OBSTACLES = ['{"q":4, "r":-2,"s":-2}', '{"q":3, "r":-2,"s":-3}'];
+const DUMMY_OBSTACLES = ['{"q":4, "r":-2,"s":-2}'];
 
 export default class BFS extends React.Component {
   constructor(props) {
@@ -428,13 +428,13 @@ export default class BFS extends React.Component {
     while (frontier.length != 0) {
       var current = frontier.shift();
       let arr = this.getNeighbors(current);
-      arr.map((l) => {
+      arr.map((w) => {
         if (
-          !cameFrom.hasOwnProperty(JSON.stringify(l)) &&
-          this.state.hexPathMap.includes(JSON.stringify(l))
+          !cameFrom.hasOwnProperty(JSON.stringify(w)) &&
+          this.state.hexPathMap.includes(JSON.stringify(w))
         ) {
-          frontier.push(l);
-          cameFrom[JSON.stringify(l)] = JSON.stringify(this.current);
+          frontier.push(w);
+          cameFrom[JSON.stringify(w)] = JSON.stringify(current);
         }
       });
     }
