@@ -2,7 +2,12 @@ import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import "./BFS.css";
 
-const DUMMY_OBSTACLES = ['{"q":4, "r":-2,"s":-2}'];
+const DUMMY_OBSTACLES = [
+  '{"q":4, "r":-2,"s":-2}',
+  '{"q":4, "r":-1,"s":-3}',
+  '{"q":4, "r":0,"s":-4}',
+];
+//341
 
 export default class BFS extends React.Component {
   constructor(props) {
@@ -36,8 +41,8 @@ export default class BFS extends React.Component {
     this.canvasHex.height = canvasHeight;
     this.canvasInteraction.width = canvasWidth;
     this.canvasInteraction.height = canvasHeight;
-    this.canvasView.height = canvasHeight;
     this.canvasView.width = canvasWidth;
+    this.canvasView.height = canvasHeight;
     this.getCanvasPosition(this.canvasInteraction);
     this.drawHex(
       this.canvasInteraction,
@@ -58,23 +63,6 @@ export default class BFS extends React.Component {
       const ctx = this.canvasInteraction.getContext("2d");
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
       this.drawPath();
-      nextState.obstacles.map((l) => {
-        const { q, r, s, x, y } = JSON.parse(l);
-        this.drawHex(
-          this.canvasInteraction,
-          this.Point(x, y),
-          1,
-          "black",
-          "black"
-        );
-      });
-      this.drawHex(
-        this.canvasInteraction,
-        this.Point(x, y),
-        1,
-        "black",
-        "grey"
-      );
       return true;
     }
     if (nextState.cameFrom !== this.state.cameFrom) {
@@ -152,7 +140,7 @@ export default class BFS extends React.Component {
 
     var p = 0;
     for (let r = 0; r <= rBottomSide; r++) {
-      if (r % 2 === 0 && r !== 0) {
+      if (r % 2 == 0 && r !== 0) {
         p++;
       }
       for (let q = -qLeftSide; q <= qRightSide; q++) {
@@ -165,7 +153,7 @@ export default class BFS extends React.Component {
         ) {
           this.drawHex(this.canvasHex, this.Point(x, y), 1, "black", "grey");
           //this.drawHexCoordinates(this.canvasHex, this.Point(x,y), this.Hex(q-p, r, - ( q - p) - r));
-          var bottomH = JSON.stringify(this.Hex(q - n, r, -(q - n) - r));
+          var bottomH = JSON.stringify(this.Hex(q - p, r, -(q - p) - r));
           if (!this.state.obstacles.includes(bottomH)) {
             hexPathMap.push(bottomH);
           }
@@ -402,13 +390,7 @@ export default class BFS extends React.Component {
       const { q, r, s } = JSON.parse(w);
       const { x, y } = this.hexToPixel(this.Hex(q, r, s));
 
-      return this.drawHex(
-        this.canvasHex,
-        this.Point(x, y),
-        1,
-        "black",
-        "black"
-      );
+      this.drawHex(this.canvasHex, this.Point(x, y), 1, "black", "black");
     });
   }
 
