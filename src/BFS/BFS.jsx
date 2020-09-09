@@ -432,15 +432,15 @@ export default class BFS extends React.Component {
     current = JSON.stringify(current);
     if (cameFrom[current] != undefined) {
       var path = [current];
-      while (current !== start) {
+      while (current != start) {
         current = cameFrom[current];
         path.push(current);
       }
+      path = [].concat(path);
+      this.setState({
+        path: path,
+      });
     }
-    path = [].concat(path);
-    this.setState({
-      path: path,
-    });
   }
 
   drawPath() {
